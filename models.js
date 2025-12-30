@@ -16,6 +16,11 @@ const Domain = sequelize.define('Domain', {
     hostname: { type: DataTypes.STRING, allowNull: false, unique: true }
 });
 
+const ApiKey = sequelize.define('ApiKey', {
+    name: { type: DataTypes.STRING, allowNull: false },
+    token: { type: DataTypes.STRING, allowNull: false, unique: true }
+});
+
 const Path = sequelize.define('Path', {
     short_path: { type: DataTypes.STRING, allowNull: false },
     original_url: { type: DataTypes.TEXT, allowNull: false },
@@ -36,4 +41,4 @@ Path.belongsTo(Domain);
 Path.hasMany(AccessLog);
 AccessLog.belongsTo(Path);
 
-module.exports = { sequelize, Domain, Path, AccessLog };
+module.exports = { sequelize, Domain, Path, AccessLog, ApiKey };

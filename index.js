@@ -1,10 +1,36 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { sequelize, Domain, Path, AccessLog } = require('./models');
+const { sequelize, Domain, Path, AccessLog, ApiKey } = require('./models');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
+
+// Auth Middleware for Internal Endpoints
+const authenticateInternal = async (req, res, next) => {
+    const token = req.headers['x-api-token'];
+    if (!token) return res.status(401).json({ error: 'Missing API token' });
+
+    const apiKey = await ApiKey.findOne({ where: { token } });
+    if (!apiKey) return res.status(403).json({ error: 'Invalid API token' });
+
+    next();
+};
+
+// Admin: Generate API Token
+app.post('/admin/tokens', async (req, res) => {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name is required' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    try {
+        const apiKey = await ApiKey.create({ name, token });
+        res.status(201).json({ name: apiKey.name, token: apiKey.token });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // Admin: Add Domain
 app.post('/admin/domains', async (req, res) => {
@@ -40,7 +66,7 @@ app.get('/admin/history/:path_id', async (req, res) => {
 });
 
 // Internal: Sync Paths
-app.get('/internal/sync/paths', async (req, res) => {
+app.get('/internal/sync/paths', authenticateInternal, async (req, res) => {
     try {
         const paths = await Path.findAll({
             where: { is_active: true },
@@ -58,7 +84,7 @@ app.get('/internal/sync/paths', async (req, res) => {
 });
 
 // Internal: Sync Logs
-app.post('/internal/sync/logs', async (req, res) => {
+app.post('/internal/sync/logs', authenticateInternal, async (req, res) => {
     const logs = req.body;
     if (!Array.isArray(logs)) return res.status(400).json({ error: 'Invalid format' });
 
