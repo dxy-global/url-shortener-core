@@ -1,0 +1,6 @@
+nohup: ignoring input
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Checking dependencies...
+✅ Database connection: SUCCESS
+✅ Database schema: SYNCED
+🚀 Core Service running on port 3000
