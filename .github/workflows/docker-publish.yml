@@ -1,0 +1,42 @@
+name: Docker Publish
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  # Use lowercase for image name as GHCR requires it
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: <LaTex>${{ github.actor }}
+          password: $</LaTex>{{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: <LaTex>${{ env.REGISTRY Fresh }}/$</LaTex>{{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: <LaTex>${{ env.REGISTRY }}/$</LaTex>{{ env.IMAGE_NAME }}:latest
+          labels: <LaTex>${{ steps.meta.outputs.labels }}
