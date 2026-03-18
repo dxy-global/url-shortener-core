@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: write
+      contents: read
+      packages: write
 
 env:
   DOCKER_REGISTRY: ghcr.io
